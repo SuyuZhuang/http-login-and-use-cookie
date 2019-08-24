@@ -7,6 +7,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class Crawler {
     public static final MediaType JSON
@@ -14,22 +15,22 @@ public class Crawler {
     public static OkHttpClient client = new OkHttpClient();
 
     public static String loginAndGetResponse(String username, String password) throws IOException {
-        String JSESSIONID = getCookie(username, password);
+        String jsessionId = getCookie(username, password);
 
         String url2 = "http://47.91.156.35:8000/auth";
         Request request = new Request.Builder()
                 .url(url2)
-                .addHeader("Cookie", JSESSIONID)
+                .addHeader("Cookie", jsessionId)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            return Objects.requireNonNull(response.body()).string();
         }
     }
 
     private static String getCookie(String username, String password) throws IOException {
         String url = "http://47.91.156.35:8000/auth/login";
-        String json = "{\"username\": \"xdml\", \"password\": \"xdml\"}";
+        String json = "{\"username\": \"" + username + "\", \"password\": \"" + password + "\"}";
         RequestBody body = RequestBody.create(json, JSON);
         Request request = new Request.Builder()
                 .url(url)
@@ -40,7 +41,7 @@ public class Crawler {
         String setCookie = "";
         try (Response response = client.newCall(request).execute()) {
             setCookie = response.header("set-cookie");
-            return setCookie.split(";")[0];
+            return Objects.requireNonNull(setCookie).split(";")[0];
         }
     }
 }
